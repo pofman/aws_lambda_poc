@@ -1,0 +1,20 @@
+{
+  "name": "aws_lambda_poc",
+  "version": "1.0.0",
+  "description": "this is poc with a respository based lambda in nodejs",
+  "main": "lambda/index.js",
+  "scripts": {
+    "test": "lambda-local -l lambda/index.js -e defaultevent.js -E {\\\"salary_taxes\\\":\\\"17\\\"}"
+  },
+  "keywords": [
+    "lambda",
+    "AWS",
+    "nodejs",
+    "poc"
+  ],
+  "author": "martin.mendez",
+  "license": "ISC",
+  "dependencies": {
+    "lambda-local": "^1.4.2"
+  }
+}
