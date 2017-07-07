@@ -60,3 +60,11 @@ typings/
 index.zip
 
 .vscode
+
+.DS_Store
+
+local-*-devices.js
+
+*.crt
+*.key
+*.pem
