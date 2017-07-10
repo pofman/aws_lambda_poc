@@ -3,19 +3,21 @@
 let CustomDevice = require('./CustomDevice');
 
 module.exports = class LedLight extends CustomDevice {
-    constructor(keyPath, certPath, caPath, clientId, host) {
-        super(keyPath, certPath, caPath, clientId, host);
+    constructor(deviceName, topics, keyPath, certPath, caPath, clientId, host) {
+        super(deviceName, topics, keyPath, certPath, caPath, clientId, host);
+    }
 
-        this.device.on('connect', function() {
-            console.log('connect');
-            this.device.subscribe('topic_1');
-            this.device.publish('topic_2', JSON.stringify({ test_data: 1 }));
+    turnLedOn () {
+        this.publish({
+            name: this.deviceName,
+            status: 1
         });
+    }
 
-        this.device.on('message', function(topic, payload) {
-            console.log('message', topic, payload.toString());
+    turnLedOff () {
+        this.publish({
+            name: this.deviceName,
+            status: 0
         });
-
-        console.log(this.host);
     }
 }
