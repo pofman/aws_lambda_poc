@@ -7,5 +7,12 @@ module.exports = {
         caPath: '',
         clientId: '',
         host: ''
+    },
+    monitor: {
+        keyPath: '',
+        certPath: '',
+        caPath: '',
+        clientId: '',
+        host: ''
     }
 };

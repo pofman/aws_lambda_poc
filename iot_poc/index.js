@@ -17,11 +17,11 @@ let oneLight = new LedLight('testLigth',
 
 let lightsMonitor = new MonitorDevice('testLigthMonitor',
     ['light_status'],
-    devicesConfig.ledLight.keyPath,
-    devicesConfig.ledLight.certPath,
-    devicesConfig.ledLight.caPath,
-    devicesConfig.ledLight.clientId,
-    devicesConfig.ledLight.host);
+    devicesConfig.monitor.keyPath,
+    devicesConfig.monitor.certPath,
+    devicesConfig.monitor.caPath,
+    devicesConfig.monitor.clientId,
+    devicesConfig.monitor.host);
 
 lightsMonitor.subscribe();
 

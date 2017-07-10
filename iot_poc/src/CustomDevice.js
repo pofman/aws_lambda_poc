@@ -18,7 +18,9 @@ module.exports = class CustomDevice {
             caPath: this.caPath,
             clientId: this.clientId,
             host: this.host,
-            baseReconnectTimeMs: 1000
+            region: 'us-east-2',
+            baseReconnectTimeMs: 1000,
+            debug: true
         });
 
         this._device.on('connect', function() {

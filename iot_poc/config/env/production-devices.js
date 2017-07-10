@@ -1,3 +1,18 @@
 'use strict'
 
-module.exports = {};
+module.exports = {
+    ledLight: {
+        keyPath: '',
+        certPath: '',
+        caPath: '',
+        clientId: '',
+        host: ''
+    },
+    monitor: {
+        keyPath: '',
+        certPath: '',
+        caPath: '',
+        clientId: '',
+        host: ''
+    }
+};
