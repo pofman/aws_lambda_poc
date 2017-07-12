@@ -9,15 +9,15 @@ module.exports = class LedLight extends CustomDevice {
 
     turnLedOn () {
         this.publish({
-            name: this.deviceName,
-            status: 1
+            light: this.deviceName,
+            status: '1'
         });
     }
 
     turnLedOff () {
         this.publish({
-            name: this.deviceName,
-            status: 0
+            light: this.deviceName,
+            status: '0'
         });
     }
 }

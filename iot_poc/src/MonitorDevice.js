@@ -1,8 +1,8 @@
 'use strict';
 
-let CustomDevice = require('./CustomDevice');
+let ShadowDevice = require('./ShadowDevice');
 
-module.exports = class MonitorDevice extends CustomDevice {
+module.exports = class MonitorDevice extends ShadowDevice {
     constructor(deviceName, topics, keyPath, certPath, caPath, clientId, host) {
         super(deviceName, topics, keyPath, certPath, caPath, clientId, host);
     }

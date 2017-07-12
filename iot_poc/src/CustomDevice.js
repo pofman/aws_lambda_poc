@@ -11,41 +11,6 @@ module.exports = class CustomDevice {
         this._host = host;
         this._deviceName = deviceName;
         this._topics = topics;
-
-        this._device = awsIot.device({
-            keyPath: this.keyPath,
-            certPath: this.certPath,
-            caPath: this.caPath,
-            clientId: this.clientId,
-            host: this.host,
-            region: 'us-east-2',
-            baseReconnectTimeMs: 1000,
-            debug: true
-        });
-
-        this._device.on('connect', function() {
-            console.log('connect ' + this.deviceName);
-        }.bind(this));
-
-        this._device.on('close', function() {
-            console.log('close ' + this.deviceName);
-        }.bind(this));
-
-        this._device.on('reconnect', function() {
-            console.log('reconnect ' + this.deviceName);
-        }.bind(this));
-
-        this._device.on('offline', function() {
-            console.log('offline ' + this.deviceName);
-        }.bind(this));
-
-        this._device.on('error', function(error) {
-            console.log('error ' + this.deviceName + ': ', error);
-        }.bind(this));
-
-        this._device.on('message', function(topic, payload) {
-            console.log('message ' + this.deviceName + ': ', topic, payload.toString());
-        }.bind(this));
     }
 
     set keyPath (keyPath) { this._keyPath = keyPath; }
@@ -64,6 +29,43 @@ module.exports = class CustomDevice {
     get deviceName () { return this._deviceName; }
     set device (device) { this._device = device; }
     get device () { return this._device; }
+
+    initialize() {
+        this.device = awsIot.device({
+            keyPath: this.keyPath,
+            certPath: this.certPath,
+            caPath: this.caPath,
+            clientId: this.clientId,
+            host: this.host,
+            region: 'us-east-2',
+            baseReconnectTimeMs: 1000,
+            debug: true
+        });
+
+        this.device.on('connect', function() {
+            console.log('connect ' + this.deviceName);
+        }.bind(this));
+
+        this.device.on('close', function() {
+            console.log('close ' + this.deviceName);
+        }.bind(this));
+
+        this.device.on('reconnect', function() {
+            console.log('reconnect ' + this.deviceName);
+        }.bind(this));
+
+        this.device.on('offline', function() {
+            console.log('offline ' + this.deviceName);
+        }.bind(this));
+
+        this.device.on('error', function(error) {
+            console.log('error ' + this.deviceName + ': ', error);
+        }.bind(this));
+
+        this.device.on('message', function(topic, payload) {
+            console.log('message ' + this.deviceName + ': ', topic, payload.toString());
+        }.bind(this));
+    }
 
     publish (data) {
         this.topics.forEach(function(element) {

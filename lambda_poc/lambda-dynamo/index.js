@@ -6,6 +6,9 @@ exports.handler = (event, context, callback) => {
     var tableName = "lightsStatus";
     var datetime = new Date().getTime().toString();
 
+    console.log('event call light value: ', event.light);
+    console.log('event call status value: ', event.status);
+
     dynamodb.getItem({
         TableName: tableName,
         Key: {
@@ -28,6 +31,7 @@ exports.handler = (event, context, callback) => {
             });
         } else {
             if (data.Item) {
+                console.log('LALALAL', event.status);
                 dynamodb.updateItem({
                     "TableName": tableName,
                     "Key" : {
