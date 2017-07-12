@@ -14,5 +14,11 @@ module.exports = {
         caPath: '',
         clientId: '',
         host: ''
+    },
+    iotRestApi: {
+        secretAccessKey: '',
+        accessKeyId: '',
+        region: '',
+        host: ''
     }
 };

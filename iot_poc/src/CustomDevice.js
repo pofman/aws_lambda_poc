@@ -42,40 +42,44 @@ module.exports = class CustomDevice {
             debug: true
         });
 
-        this.device.on('connect', function() {
+        this.device.on('connect', () => {
             console.log('connect ' + this.deviceName);
-        }.bind(this));
+        });
 
-        this.device.on('close', function() {
+        this.bindCommonEvents();
+    }
+
+    bindCommonEvents() {
+        this.device.on('close', () => {
             console.log('close ' + this.deviceName);
-        }.bind(this));
+        });
 
-        this.device.on('reconnect', function() {
+        this.device.on('reconnect', () => {
             console.log('reconnect ' + this.deviceName);
-        }.bind(this));
+        });
 
-        this.device.on('offline', function() {
+        this.device.on('offline', () => {
             console.log('offline ' + this.deviceName);
-        }.bind(this));
+        });
 
-        this.device.on('error', function(error) {
+        this.device.on('error', (error) => {
             console.log('error ' + this.deviceName + ': ', error);
-        }.bind(this));
+        });
 
-        this.device.on('message', function(topic, payload) {
+        this.device.on('message', (topic, payload) => {
             console.log('message ' + this.deviceName + ': ', topic, payload.toString());
-        }.bind(this));
+        });
     }
 
     publish (data) {
-        this.topics.forEach(function(element) {
+        this.topics.forEach((element) => {
             console.log('pushing message to: ' + this.deviceName + ' element: ' + element + ' data: ', data);
             this.device.publish(element, JSON.stringify(data));
         }, this);
     }
 
     subscribe () {
-        this.topics.forEach(function(element) {
+        this.topics.forEach((element) => {
             console.log('subscribing device: ' + this.deviceName + ' element: ' + element);
             this.device.subscribe(element);
         }, this);

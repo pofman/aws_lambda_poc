@@ -27,57 +27,48 @@ module.exports = class ShadowDevice extends CustomDevice {
             debug: true
         });
 
-        this.device.on('connect', function() {
+        this.device.on('connect', () => {
             console.log('connect ' + this.deviceName);
-            this.device.register(this.deviceName, {},
-                function(err, failedTopics) {
-                    if (err || failedTopics) {
-                        console.log('shadow register failure', err, failedTopics);
-                        return;
-                    }
+            this.registerShadowDevice(this.deviceName, (err, failedTopics) => {
+                let ledState = { 'state': { 'reported': this.initialState } };
+                this.clientToken = this.device.update(this.deviceName, ledState);
 
-                    let ledState = { 'state': { 'reported': this.initialState } };
-                    this.clientToken = this.device.update(this.deviceName, ledState);
+                if (this.clientToken === null) {
+                    console.log('update shadow failed, operation still in progress');
+                }
+            });
+        });
 
-                    if (this.clientToken === null) {
-                        console.log('update shadow failed, operation still in progress');
-                    }
-
-                    console.log('Device thing registered.');
-                }.bind(this));
-        }.bind(this));
-
-        this.device.on('status', function(thingName, stat, clientToken, stateObject) {
+        this.device.on('status', (thingName, stat, clientToken, stateObject) => {
             console.log('received ' + stat + ' on ' + thingName + ': ' + JSON.stringify(stateObject));
-        }.bind(this));
+        });
 
-        this.device.on('delta', function(thingName, stateObject) {
+        this.device.on('delta', (thingName, stateObject) => {
             console.log('received delta on ' + thingName + ': ' + JSON.stringify(stateObject));
-        }.bind(this));
+        });
 
-        this.device.on('timeout', function(thingName, clientToken) {
+        this.device.on('timeout', (thingName, clientToken) => {
             console.log('received timeout on ' + thingName + ' with token: ' + clientToken);
-        }.bind(this));
+        });
 
-        this.device.on('close', function() {
-            console.log('close ' + this.deviceName);
-        }.bind(this));
+        this.bindCommonEvents();
+    }
 
-        this.device.on('reconnect', function() {
-            console.log('reconnect ' + this.deviceName);
-        }.bind(this));
+    registerShadowDevice(thingName, callback) {
+        this.device.register(thingName, {},
+            (err, failedTopics) => {
+                if (err || failedTopics) {
+                    console.log('shadow register failure', err, failedTopics);
+                    return;
+                }
 
-        this.device.on('offline', function() {
-            console.log('offline ' + this.deviceName);
-        }.bind(this));
+                if (callback) {
+                    callback(err, failedTopics);
+                }
 
-        this.device.on('error', function(error) {
-            console.log('error ' + this.deviceName + ': ', error);
-        }.bind(this));
-
-        this.device.on('message', function(topic, payload) {
-            console.log('message ' + this.deviceName + ': ', topic, payload.toString());
-        }.bind(this));
+                console.log('Device thing registered.');
+            }
+        );
     }
 
     update(data) {
@@ -93,5 +84,6 @@ module.exports = class ShadowDevice extends CustomDevice {
 
     get(thingName) {
         let localThingToken = this.device.get(thingName);
+        return localThingToken;
     }
 }
