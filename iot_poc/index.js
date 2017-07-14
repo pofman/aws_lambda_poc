@@ -4,13 +4,12 @@ const VIRTUAL = true;
 const PHYSICAL = false;
 
 const express = require('express'),
-    request = require('request'),
-    aws4 =require('aws4'),
     five = require('johnny-five'),
     devicesConfig = require('./config/config'),
     LedLight = require('./src/LedLight'),
     LedLightShadow = require('./src/LedLightShadow'),
-    MonitorDevice = require('./src/MonitorDevice');
+    MonitorDevice = require('./src/MonitorDevice'),
+    ThingAPI = require('./src/ThingAPI');
 
 const app = express();
 let board = new five.Board();
@@ -67,9 +66,7 @@ let initializeAwsDevices = () => {
 
     lightsMonitor.initialize();
     lightsMonitor.subscribe();
-    lightsMonitor.registerShadowDevice(oneLight.deviceName, (err, failedTopics) => {
-        console.log('light on monitor registered');
-    });
+    lightsMonitor.monitor(oneLight.deviceName);
 
     oneLight.subscribeToEvent('delta', (thingName, stateObject) => {
         if (thingName == oneLight.deviceName) {
@@ -91,6 +88,11 @@ board.on('ready', () => {
         button: button,
         led: led
     });
+
+    // let light = new five.Light('A1');
+    // light.on('change', function() {
+    //     console.log('light level', this.level);
+    // });
 
     initializeAwsDevices();
 
@@ -136,23 +138,7 @@ app.get('/turnOffLight', (req, res) => {
 });
 
 app.get('/lightShadowState', (req, res) => {
-    let awsSign = aws4.sign({
-        service: 'iotdata',
-        region: devicesConfig.iotRestApi.region,
-        method: 'GET',
-        path: '/things/' + oneLight.deviceName + '/shadow',
-        headers: {
-            'Content-Type': 'application/x-amz-json-1.0',
-            'Host': devicesConfig.iotRestApi.host
-        }
-    }, {
-        secretAccessKey: devicesConfig.iotRestApi.secretAccessKey,
-        accessKeyId: devicesConfig.iotRestApi.accessKeyId
-    });
-
-    awsSign.url = 'https://' + awsSign.hostname + awsSign.path;
-
-    request(awsSign, (err, response, body) => {
+    new ThingAPI().getStatus(oneLight.deviceName, (err, response, body) => {
         if (err) {
             console.log('error request shadow state', err);
             return;
