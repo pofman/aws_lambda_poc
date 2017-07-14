@@ -8,14 +8,28 @@ module.exports = class LedLightShadow extends ShadowDevice {
     }
 
     turnLedOn () {
-        this.update({
+        this.update(false, {
             light: this.deviceName,
             status: '1'
         });
     }
 
     turnLedOff () {
-        this.update({
+        this.update(false, {
+            light: this.deviceName,
+            status: '0'
+        });
+    }
+
+    reportLedOn () {
+        this.update(true, {
+            light: this.deviceName,
+            status: '1'
+        });
+    }
+
+    reportLedOff () {
+        this.update(true, {
             light: this.deviceName,
             status: '0'
         });

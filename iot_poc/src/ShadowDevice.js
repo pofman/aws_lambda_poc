@@ -30,8 +30,7 @@ module.exports = class ShadowDevice extends CustomDevice {
         this.device.on('connect', () => {
             console.log('connect ' + this.deviceName);
             this.registerShadowDevice(this.deviceName, (err, failedTopics) => {
-                let ledState = { 'state': { 'reported': this.initialState } };
-                this.clientToken = this.device.update(this.deviceName, ledState);
+                this.clientToken = this.update(true, this.initialState);
 
                 if (this.clientToken === null) {
                     console.log('update shadow failed, operation still in progress');
@@ -71,9 +70,17 @@ module.exports = class ShadowDevice extends CustomDevice {
         );
     }
 
-    update(data) {
-        let ledState = { 'state': { 'desired': data } };
-        this.clientToken = this.device.update(this.deviceName, ledState);
+    subscribeToEvent(event, callback) {
+        this.device.on(event, callback);
+    }
+
+    update(updateReportedAndDesired, data) {
+        let thingState = { 'state': { 'desired': data } };
+        if (updateReportedAndDesired) {
+            thingState.state.reported = data;
+        }
+
+        this.clientToken = this.device.update(this.deviceName, thingState);
 
         if (this.clientToken === null) {
             console.log('update shadow failed, operation still in progress');
