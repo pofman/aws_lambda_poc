@@ -6,39 +6,18 @@ const PHYSICAL = false;
 const express = require('express'),
     five = require('johnny-five'),
     devicesConfig = require('./config/config'),
-    LedLight = require('./src/LedLight'),
     LedLightShadow = require('./src/LedLightShadow'),
     MonitorDevice = require('./src/MonitorDevice'),
-    ThingAPI = require('./src/ThingAPI');
+    ThingAPI = require('./src/ThingAPI'),
+    PhotoTransistorDevice = require('./src/PhotoTransistorDevice'),
+    Button = require('./src/Button');
 
 const app = express();
 let board = new five.Board();
 let button,
-    led,
-    ledStatus = 0,
     oneLight,
-    lightsMonitor;
-
-let turnOnTheLights = (isVirtual) => {
-    if (isVirtual) {
-        oneLight.turnLedOn();
-    } else {
-        led.on();
-        ledStatus = 1;
-        oneLight.reportLedOn();
-    }
-}
-
-let turnOffTheLights = (isVirtual) => {
-    if (isVirtual) {
-        oneLight.turnLedOff();
-    }
-    else {
-        led.off();
-        ledStatus = 0;
-        oneLight.reportLedOff();
-    }
-}
+    lightsMonitor,
+    photoTransistor;
 
 let initializeAwsDevices = () => {
     oneLight = new LedLightShadow('led-light',
@@ -49,14 +28,16 @@ let initializeAwsDevices = () => {
         devicesConfig.ledLight.clientId,
         devicesConfig.ledLight.host, {
             light: 'led-light',
-            status: ledStatus.toString()
+            status: 0
         }
     );
-
     oneLight.initialize();
+    oneLight.initializePhysical({
+        pin: '5'
+    });
 
     lightsMonitor = new MonitorDevice('testLigthMonitor',
-        ['light_status'],
+        ['light_status', 'light_status_sensor'],
         devicesConfig.monitor.keyPath,
         devicesConfig.monitor.certPath,
         devicesConfig.monitor.caPath,
@@ -68,70 +49,67 @@ let initializeAwsDevices = () => {
     lightsMonitor.subscribe();
     lightsMonitor.monitor(oneLight.deviceName);
 
-    oneLight.subscribeToEvent('delta', (thingName, stateObject) => {
-        if (thingName == oneLight.deviceName) {
-            console.log('there is a delta: ', stateObject);
-            if (stateObject.state.status == 1) {
-                turnOnTheLights(PHYSICAL);
-            } else if (stateObject.state.status == 0) {
-                turnOffTheLights(PHYSICAL);
-            }
-        }
+    photoTransistor = new PhotoTransistorDevice('lightSensor',
+        ['light_status_sensor'],
+        devicesConfig.lightSensor.keyPath,
+        devicesConfig.lightSensor.certPath,
+        devicesConfig.lightSensor.caPath,
+        devicesConfig.lightSensor.clientId,
+        devicesConfig.lightSensor.host, {}
+    );
+    photoTransistor.initialize();
+    photoTransistor.initializePhysicalSensor({
+        pin: 'A1',
+        freq: 10000
+    });
+    photoTransistor.within([ 700, 1023 ], (err, value) => {
+        console.log('within data too much light: ', value);
+    });
+
+    photoTransistor.within([ 0, 150 ], (err, value) => {
+        console.log('within data low light: ', value);
+    });
+
+    photoTransistor.onChange((data) => {
+        console.log('light level', data.lux, data.level);
     });
 }
 
 board.on('ready', () => {
-    button = new five.Button(2);
-    led = new five.Led(5);
-
-    board.repl.inject({
-        button: button,
-        led: led
-    });
-
-    // let light = new five.Light('A1');
-    // light.on('change', function() {
-    //     console.log('light level', this.level);
-    // });
+    button = new Button();
+    button.initializePhysicalButton({ pin: 2 });
 
     initializeAwsDevices();
 
-    // "down" the button is pressed
-    button.on('down', () => {
+    button.onDown(() => {
         console.log('down');
-        if (ledStatus == 0) {
-            turnOnTheLights(PHYSICAL);
-        }
-        else if (ledStatus == 1) {
-            turnOffTheLights(PHYSICAL);
-        }
-        else {
-            turnOffTheLights(PHYSICAL);
-        }
+        oneLight.changeLedStatus();
     });
 
-    // "hold" the button is pressed for specified time.
-    //        defaults to 500ms (1/2 second)
-    //        set
-    button.on('hold', () => {
+    button.onHold(() => {
         console.log('hold');
     });
 
-    // "up" the button is released
-    button.on('up', () => {
+    button.onUp(() => {
         console.log('up');
+    });
+
+    board.repl.inject({
+        button: button.instance,
+        led: oneLight.led,
+        photoTransistor: photoTransistor.sensor
     });
 });
 
 app.get('/turnOnLight', (req, res) => {
-    turnOnTheLights(VIRTUAL);
+    oneLight.turnOnTheLights(VIRTUAL);
     res.json({
         status: 'light on'
     });
 });
 
 app.get('/turnOffLight', (req, res) => {
-    turnOffTheLights(VIRTUAL);
+    oneLight.turnOffTheLights(VIRTUAL);
     res.json({
         status: 'light off'
     });
@@ -148,10 +126,23 @@ app.get('/lightShadowState', (req, res) => {
     });
 });
 
+app.get('/lightSensorShadowState', (req, res) => {
+    new ThingAPI().getStatus(photoTransistor.deviceName, (err, response, body) => {
+        if (err) {
+            console.log('error request shadow state', err);
+            return;
+        }
+
+        res.json(body);
+    });
+});
+
 app.listen(3000, () => {
     console.log('Iot app listening on port 3000!');
 });
 
 process.on('SIGINT', () => {
-    led.off();
+    if (oneLight) {
+        oneLight.dispose();
+    }
 });

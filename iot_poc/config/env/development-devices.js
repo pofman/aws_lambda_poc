@@ -8,6 +8,13 @@ module.exports = {
         clientId: '',
         host: ''
     },
+    lightSensor: {
+        keyPath: '',
+        certPath: '',
+        caPath: '',
+        clientId: '',
+        host: ''
+    },
     monitor: {
         keyPath: '',
         certPath: '',
