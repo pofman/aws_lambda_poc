@@ -15,3 +15,11 @@ if [ "$file" == "lambda-dynamo" ]; then
     cd ..
     aws lambda update-function-code --function-name lightStatusUpdater --zip-file fileb://index.zip
 fi
+
+if [ "$file" == "lambda-stream" ]; then
+    rm index.zip
+    cd lambda-stream
+    zip ../index.zip * -X -r
+    cd ..
+    aws lambda update-function-code --function-name streamReader --zip-file fileb://index.zip
+fi
