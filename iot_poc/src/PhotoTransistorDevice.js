@@ -23,6 +23,7 @@ module.exports = class PhotoTransistorDevice extends ShadowDevice {
         this.onChange((data) => {
             this.update(true, {
                 sensor: this.deviceName,
+                date: Date.now(),
                 level: data.level
             });
         });
